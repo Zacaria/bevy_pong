@@ -7,13 +7,13 @@ use bevy::{
 };
 use bevy_editor_pls::EditorPlugin;
 use bevy_pong::collider::Collider;
+use bevy_pong::movement::Velocity;
 use bevy_pong::player::{paddle_movement, spawn_paddles, Action};
 use bevy_pong::wall::spawn_walls;
 use bevy_pong::{
     ball::{spawn_ball, Ball},
     movement::apply_velocity,
 };
-use bevy_pong::{movement::Velocity, player::PlayerSide};
 use leafwing_input_manager::prelude::InputManagerPlugin;
 
 fn main() {
@@ -50,11 +50,11 @@ fn setup(mut commands: Commands) {
 
 fn check_collisions(
     mut ball_query: Query<(&mut Velocity, &Transform, &Sprite), With<Ball>>,
-    collider_query: Query<(&Transform), With<Collider>>,
+    collider_query: Query<&Transform, With<Collider>>,
 ) {
     let (mut ball_velocity, ball_transform, ball_sprite) = ball_query.single_mut();
 
-    for (transform) in &collider_query {
+    for transform in &collider_query {
         let collision = collide(
             ball_transform.translation,
             ball_sprite.custom_size.unwrap(),
@@ -72,10 +72,6 @@ fn check_collisions(
                 Collision::Top => reflect_y = ball_velocity.y < 0.0,
                 Collision::Bottom => reflect_y = ball_velocity.y > 0.0,
                 Collision::Inside => { /* do nothing */ }
-            }
-
-            if collision == Collision::Left || collision == Collision::Right {
-                dbg!(&ball_velocity, &reflect_x, &reflect_y);
             }
 
             if reflect_x {

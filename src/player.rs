@@ -86,10 +86,10 @@ pub fn spawn_paddles(mut commands: Commands) {
 }
 
 pub fn paddle_movement(
-    mut query_player: Query<(&mut Transform, &PlayerSide, &ActionState<Action>)>,
+    mut query_player: Query<(&mut Transform, &ActionState<Action>)>,
     time_step: Res<FixedTime>,
 ) {
-    for (mut player_transform, player, action_state) in query_player.iter_mut() {
+    for (mut player_transform, action_state) in query_player.iter_mut() {
         let mut direction = 0.0;
         if action_state.pressed(Action::Up) {
             direction += 1.0;
@@ -102,9 +102,9 @@ pub fn paddle_movement(
         let new_position = player_transform.translation.y
             + direction * PADDLE_SPEED * time_step.period.as_secs_f32();
 
-        let top_bound = TOP_WALL - WALL_THICKNESS / 2.0 - PADDLE_SIZE.x / 2.0 - PADDLE_PADDING;
+        let top_bound = TOP_WALL - WALL_THICKNESS / 2.0 - PADDLE_SIZE.y / 2.0 - PADDLE_PADDING;
         let bottom_bound =
-            BOTTOM_WALL + WALL_THICKNESS / 2.0 + PADDLE_SIZE.x / 2.0 + PADDLE_PADDING;
+            BOTTOM_WALL + WALL_THICKNESS / 2.0 + PADDLE_SIZE.y / 2.0 + PADDLE_PADDING;
 
         player_transform.translation.y = new_position.clamp(bottom_bound, top_bound);
     }
