@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use leafwing_input_manager::prelude::*;
 
 use crate::collider::Collider;
 use crate::constants::*;
@@ -10,10 +11,16 @@ const PADDLE_SIZE: Vec3 = Vec3::new(20.0, 120.0, 0.0);
 const PADDLE_COLOR: Color = Color::rgb(0.8, 0.4, 0.4);
 const PADDLE_INIT_POSITION: f32 = 300.0;
 
-#[derive(Component, Default, Debug)]
+// This is the list of "things in the game I want to be able to do based on input"
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
+pub enum Action {
+    Up,
+    Down,
+}
+
+#[derive(Component, Debug, Copy, Clone)]
 pub enum PlayerSide {
     Left,
-    #[default]
     Right,
 }
 
@@ -26,12 +33,13 @@ impl PlayerSide {
     }
 }
 
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct PlayerBundle {
     sprite_bundle: SpriteBundle,
     collider: Collider,
     name: Name,
     side: PlayerSide,
+    input_manager: InputManagerBundle<Action>,
 }
 
 impl PlayerBundle {
@@ -53,7 +61,13 @@ impl PlayerBundle {
             side,
             collider: Collider,
             name: Name::new(name),
-            // ..default()
+            input_manager: InputManagerBundle::<Action> {
+                action_state: ActionState::default(),
+                input_map: InputMap::new([
+                    (side.movement_keys().0, Action::Up),
+                    (side.movement_keys().1, Action::Down),
+                ]),
+            },
         }
     }
 }
@@ -72,17 +86,16 @@ pub fn spawn_paddles(mut commands: Commands) {
 }
 
 pub fn paddle_movement(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query_player: Query<(&mut Transform, &PlayerSide)>,
+    mut query_player: Query<(&mut Transform, &PlayerSide, &ActionState<Action>)>,
     time_step: Res<FixedTime>,
 ) {
-    for (mut player_transform, player) in query_player.iter_mut() {
+    for (mut player_transform, player, action_state) in query_player.iter_mut() {
         let mut direction = 0.0;
-        if keyboard_input.pressed(player.movement_keys().0) {
+        if action_state.pressed(Action::Up) {
             direction += 1.0;
         }
 
-        if keyboard_input.pressed(player.movement_keys().1) {
+        if action_state.pressed(Action::Down) {
             direction -= 1.0;
         }
 

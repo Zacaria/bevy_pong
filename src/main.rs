@@ -7,16 +7,18 @@ use bevy::{
 };
 use bevy_editor_pls::EditorPlugin;
 use bevy_pong::collider::Collider;
-use bevy_pong::player::{paddle_movement, spawn_paddles};
+use bevy_pong::player::{paddle_movement, spawn_paddles, Action};
 use bevy_pong::wall::spawn_walls;
 use bevy_pong::{
     ball::{spawn_ball, Ball},
     movement::apply_velocity,
 };
 use bevy_pong::{movement::Velocity, player::PlayerSide};
+use leafwing_input_manager::prelude::InputManagerPlugin;
 
 fn main() {
     App::new()
+        .add_plugins(InputManagerPlugin::<Action>::default())
         // Configure how frequently our gameplay systems are run
         .insert_resource(FixedTime::new_from_secs(1.0 / 60.0))
         .add_systems(Startup, setup)
